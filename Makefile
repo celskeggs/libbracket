@@ -6,18 +6,22 @@ CFLAGS=-O3 -m$(BITS) -Wall
 ALL_CFLAGS=-nostdlib -nostdinc -fno-asynchronous-unwind-tables -ffreestanding -I$(BUILDDIR) -I$(CC_BUILTIN_INC) $(CFLAGS)
 DESTDIR=
 
-OBJS_RAW=math.o memory.o
+OBJS_RAW=math.o memory.o e_pow.o e_sqrt.o s_scalbn.o s_floor.o e_fmod.o floatscan.o strtod.o
 OBJS=$(addprefix $(BUILDDIR)/, $(OBJS_RAW))
 
 $(BUILDDIR)/libbracket.a: $(OBJS)
 	ar rcs $@ $^
 
-$(BUILDDIR)/math.o: src/math.c src/libbracket.h
+$(BUILDDIR)/%.o: src/%.c src/libbracket.h
+# $(BUILDDIR)/math.o: src/math.c src/libbracket.h
 	mkdir -p $(BUILDDIR)
 	$(CC) $(ALL_CFLAGS) $< -c -o $@
-$(BUILDDIR)/memory.o: src/memory.c src/libbracket.h
-	mkdir -p $(BUILDDIR)
-	$(CC) $(ALL_CFLAGS) $< -c -o $@
+# $(BUILDDIR)/memory.o: src/memory.c src/libbracket.h
+#	mkdir -p $(BUILDDIR)
+#	$(CC) $(ALL_CFLAGS) $< -c -o $@
+# $(BUILDDIR)/e_pow.o: src/e_pow.c src/libbracket.h
+#	mkdir -p $(BUILDDIR)
+#	$(CC) $(ALL_CFLAGS) $< -c -o $@
 
 .PHONY: main install test clean
 	

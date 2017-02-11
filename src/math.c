@@ -24,20 +24,6 @@ long double fmaxl(long double x, long double y) {
  * ====================================================
  */
 
-// little-endian
-#define __HI(x) *(1+(int*)&x)
-#define __LO(x) *(int*)&x
-#define __HIp(x) *(1+(int*)x)
-#define __LOp(x) *(int*)x
-
-union xdouble {
-	double asfull;
-	struct {
-		int low;
-		int high;
-	};
-};
-
 /*
  * for non-zero x 
  *	x = frexp(arg,&exp);
@@ -52,7 +38,7 @@ static const double two54 =  1.80143985094819840000e+16; /* 0x43500000, 0x000000
 
 double frexp(double x, int *eptr) {
 	int ix;
-	union xdouble xd = { .asfull = x };
+	union bracket_split_double xd = { .asfull = x };
 	ix = 0x7fffffff & xd.high;
 	*eptr = 0;
 	if (ix >= 0x7ff00000 || ((ix|xd.low) == 0)) {
@@ -66,4 +52,34 @@ double frexp(double x, int *eptr) {
 	*eptr += (ix>>20) - 1022;
 	xd.high = (xd.high & 0x800fffff) | 0x3fe00000;
 	return xd.asfull;
+}
+
+double fabs(double x) {
+	return bracket_uHI(x, bracket_HI(x) & 0x7FFFFFFF);
+}
+
+_Static_assert(sizeof(double) == sizeof(int) * 2, "double check");
+_Static_assert(sizeof(long double) == sizeof(int) * 4, "double check 2");
+
+double copysign(double x, double y) {
+	return bracket_uHI(x, (bracket_HI(x)&0x7fffffff)|(bracket_HI(y)&0x80000000));
+}
+
+long double copysignl(long double x, long double y) {
+	int *xp = (int*) &x, *yp = (int*) &y;
+	xp[3] &= 0x7FFFFFFF;
+	xp[3] |= 0x80000000 & yp[3];
+	return x;
+}
+
+double ldexp(double value, int exp) {
+	if(!finite(value)||value==0.0) return value;
+	value = scalbn(value,exp);
+	return value;
+}
+
+int finite(double x) {
+	int hx;
+	hx = bracket_HI(x);
+	return (unsigned)((hx&0x7fffffff)-0x7ff00000)>>31;
 }
