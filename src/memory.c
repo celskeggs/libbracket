@@ -49,6 +49,18 @@ void *memset(void *s, int c, size_t n) {
     return s;
 }
 
+int memcmp(const void *s1, const void *s2, size_t n) {
+    uint8_t *s18 = (uint8_t *) s1, *s28 = (uint8_t *) s2;
+    while (n-- > 0) {
+        if (*s18 != *s28) {
+            return *s18 - *s28;
+        }
+        s18++;
+        s28++;
+    }
+    return 0;
+}
+
 static int starts_with(const char *haystack, const char *needle) {
     while (*haystack == *needle) {
         haystack++;
@@ -74,4 +86,29 @@ const char *strchr(const char *s, int c) {
         }
     }
     return s;
+}
+
+size_t strspn(const char *haystack, const char *accept) {
+	size_t n = 0;
+	while (strchr(accept, haystack[n]) != NULL) {
+		n++;
+	}
+	return n;
+}
+
+size_t strcspn(const char *haystack, const char *reject) {
+	size_t n = 0;
+	while (strchr(reject, haystack[n]) == NULL) {
+		n++;
+	}
+	return n;
+}
+
+const char *strpbrk(const char *s, const char *accept) {
+	while (strchr(accept, *s) == NULL) {
+		if (!*s++) {
+			return NULL;
+		}
+	}
+	return s;
 }

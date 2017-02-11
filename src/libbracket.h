@@ -24,16 +24,28 @@
 #define EOF (-1)
 #endif
 
+#ifndef USHRT_MAX
+#define USHRT_MAX (65535)
+#endif
+
+#ifndef SHRT_MAX
+#define SHRT_MAX (32767)
+#endif
+
+#ifndef SHRT_MIN
+#define SHRT_MIN (-32768)
+#endif
+
 #ifndef UINT_MAX
 #define UINT_MAX (~(unsigned int)0)
 #endif
 
 #ifndef INT_MAX
-#define INT_MAX (UINT_MAX >> 1)
+#define INT_MAX ((int)(UINT_MAX >> 1))
 #endif
 
 #ifndef INT_MIN
-#define INT_MIN (-INT_MAX - 1)
+#define INT_MIN ((int)(-INT_MAX - 1))
 #endif
 
 #ifndef ULONG_MAX
@@ -41,11 +53,11 @@
 #endif
 
 #ifndef LONG_MAX
-#define LONG_MAX (ULONG_MAX >> 1)
+#define LONG_MAX ((long)(ULONG_MAX >> 1))
 #endif
 
 #ifndef LONG_MIN
-#define LONG_MIN (-LONG_MAX - 1)
+#define LONG_MIN ((long)(-LONG_MAX - 1))
 #endif
 
 #ifndef ULLONG_MAX
@@ -53,11 +65,11 @@
 #endif
 
 #ifndef LLONG_MAX
-#define LLONG_MAX (ULLONG_MAX >> 1)
+#define LLONG_MAX ((long long)(ULLONG_MAX >> 1))
 #endif
 
 #ifndef LLONG_MIN
-#define LLONG_MIN (-LLONG_MAX - 1)
+#define LLONG_MIN ((long long)(-LLONG_MAX - 1))
 #endif
 
 #ifndef CHAR_BIT
@@ -70,10 +82,35 @@
 
 // math
 
+#define LDBL_TRUE_MIN 3.6451995318824746025e-4951L
+#define LDBL_MIN     3.3621031431120935063e-4932L
+#define LDBL_MAX     1.1897314953572317650e+4932L
+#define LDBL_EPSILON 1.0842021724855044340e-19L
+
+#define LDBL_MANT_DIG 64
+#define LDBL_MIN_EXP (-16381)
+#define LDBL_MAX_EXP 16384
+
+#define LDBL_DIG 18
+#define LDBL_MIN_10_EXP (-4931)
+#define LDBL_MAX_10_EXP 4932
+
+#define DBL_MANT_DIG 53
+#define DBL_MIN_EXP (-1021)
+#define DBL_MAX_EXP 1024
+#define DBL_HAS_SUBNORM 1
+
+#define FLT_MANT_DIG 24
+#define FLT_MIN_EXP (-125)
+#define FLT_MAX_EXP 128
+#define FLT_HAS_SUBNORM 1
+
 // NOTE: math functions here should not raise any kind of exception or modify
 // errno, since those require additional features not assumed in libbracket.
 
 #define isnan(x) __builtin_isnan(x)
+
+static inline int abs(int x) { return x < 0 ? -x : x; }
 
 double fmax(double x, double y);
 float fmaxf(float x, float y);
@@ -126,6 +163,10 @@ struct __floatscan_state {
 };
 long double __floatscan(struct __floatscan_state *, int, int);
 
+double strtod(const char *restrict s, char **restrict p);
+float strtof(const char *restrict s, char **restrict p);
+long double strtold(const char *restrict s, char **restrict p);
+
 // memory
 
 int strcmp(const char *s1, const char *s2);
@@ -133,10 +174,14 @@ int strncmp(const char *s1, const char *s2, size_t n);
 
 const char *strstr(const char *haystack, const char *needle);
 const char *strchr(const char *s, int c);
+size_t strspn(const char *haystack, const char *accept);
+size_t strcspn(const char *haystack, const char *reject);
+const char *strpbrk(const char *s, const char *accept);
 
 size_t strlen(const char *s);
 
 void *memcpy(void *dest, const void *src, size_t n);
 void *memset(void *s, int c, size_t n);
+int memcmp(const void *s1, const void *s2, size_t n);
 
 #endif
