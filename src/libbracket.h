@@ -167,6 +167,12 @@ double strtod(const char *restrict s, char **restrict p);
 float strtof(const char *restrict s, char **restrict p);
 long double strtold(const char *restrict s, char **restrict p);
 
+#define INTBUFSIZE 24
+
+int itostr(int64_t value, char *output, size_t len);
+int utostr(uint64_t value, char *output, size_t len);
+int dtostr(double value, char *output, size_t len);
+
 // memory
 
 int strcmp(const char *s1, const char *s2);
