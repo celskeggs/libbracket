@@ -82,6 +82,10 @@
 
 // math
 
+_Static_assert(sizeof(long double) == 16, "wrong size for long double");
+_Static_assert(sizeof(double) == 8, "wrong size for double");
+_Static_assert(sizeof(float) == 4, "wrong size for float");
+
 #define LDBL_TRUE_MIN 3.6451995318824746025e-4951L
 #define LDBL_MIN     3.3621031431120935063e-4932L
 #define LDBL_MAX     1.1897314953572317650e+4932L
@@ -122,6 +126,7 @@ double copysign(double x, double y);
 long double copysignl(long double x, long double y);
 
 double frexp(double x, int *out);
+long double frexpl(long double x, int *e);
 
 double sqrt(double x);
 double pow(double x, double y);
@@ -155,6 +160,62 @@ union bracket_split_double {
 #define bracket_uHI(x, n) (bracket_C(bracket_LO(x), n))
 #define bracket_uLO(x, n) (bracket_C(n, bracket_HI(x)))
 
+// code from musl (see licenses in other files)
+
+#define FP_NAN       0
+#define FP_INFINITE  1
+#define FP_ZERO      2
+#define FP_SUBNORMAL 3
+#define FP_NORMAL    4
+
+union bracket_ldshape {
+        long double f;
+        struct {
+                uint64_t m;
+                uint16_t se;
+        } i;
+};
+
+static inline int __fpclassifyl(long double x)
+{
+        union bracket_ldshape u = {x};
+        int e = u.i.se & 0x7fff;
+        int msb = u.i.m>>63;
+        if (!e && !msb)
+                return u.i.m ? FP_SUBNORMAL : FP_ZERO;
+        if (!msb)
+                return FP_NAN;
+        if (e == 0x7fff)
+                return u.i.m << 1 ? FP_NAN : FP_INFINITE;
+        return FP_NORMAL;
+}
+
+static inline unsigned __FLOAT_BITS(float __f)
+{
+        union {float __f; unsigned __i;} __u;
+        __u.__f = __f;
+        return __u.__i;
+}
+
+static inline unsigned long long __DOUBLE_BITS(double __f)
+{
+        union {double __f; unsigned long long __i;} __u;
+        __u.__f = __f;
+        return __u.__i;
+}
+
+int __fpclassifyl(long double);
+
+#define signbit(x) ( \
+        sizeof(x) == sizeof(float) ? (int)(__FLOAT_BITS(x)>>31) : \
+        sizeof(x) == sizeof(double) ? (int)(__DOUBLE_BITS(x)>>63) : \
+        (int) (((union bracket_ldshape) {.f = (long double) x}).i.se >> 15) )
+
+#define isfinite(x) ( \
+        sizeof(x) == sizeof(float) ? (__FLOAT_BITS(x) & 0x7fffffff) < 0x7f800000 : \
+        sizeof(x) == sizeof(double) ? (__DOUBLE_BITS(x) & -1ULL>>1) < 0x7ffULL<<52 : \
+        __fpclassifyl(x) > FP_INFINITE)
+
 // parsing and encoding
 
 struct __floatscan_state {
@@ -171,7 +232,7 @@ long double strtold(const char *restrict s, char **restrict p);
 
 int itostr(int64_t value, char *output, size_t len);
 int utostr(uint64_t value, char *output, size_t len);
-int dtostr(double value, char *output, size_t len);
+int dtostr(long double value, char *output, size_t len);
 
 // memory
 
@@ -189,5 +250,13 @@ size_t strlen(const char *s);
 void *memcpy(void *dest, const void *src, size_t n);
 void *memset(void *s, int c, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
+
+// chars
+
+int toupper(int c);
+int tolower(int c);
+int isalpha(int c);
+int isdigit(int c);
+int isalnum(int c);
 
 #endif

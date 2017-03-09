@@ -6,7 +6,7 @@ CFLAGS=-O3 -m$(BITS) -Wall
 ALL_CFLAGS=-nostdlib -nostdinc -fno-asynchronous-unwind-tables -ffreestanding -I$(BUILDDIR) -I$(CC_BUILTIN_INC) $(CFLAGS)
 DESTDIR=
 
-OBJS_RAW=math.o memory.o e_pow.o e_sqrt.o s_scalbn.o s_floor.o e_fmod.o floatscan.o strtod.o itostr.o
+OBJS_RAW=math.o memory.o e_pow.o e_sqrt.o s_scalbn.o s_floor.o e_fmod.o floatscan.o strtod.o itostr.o dtostr.o chars.o
 OBJS=$(addprefix $(BUILDDIR)/, $(OBJS_RAW))
 
 $(BUILDDIR)/libbracket.a: $(OBJS)
